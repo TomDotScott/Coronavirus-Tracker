@@ -1,6 +1,29 @@
 import requests
 import smtplib
 from bs4 import BeautifulSoup
+import schedule
+import time
+
+def job():
+    url = "https://www.worldometers.info/coronavirus/"
+
+    webpage = requests.get(url)
+
+    soup = BeautifulSoup(webpage.text, 'html.parser')
+
+    table_body = soup.find('tbody')
+
+    rows = table_body.find_all('tr')
+
+    UK = []
+
+    for row in rows:
+        cols = row.find_all('td')
+        cols = [x.text.strip() for x in cols]
+        if cols[0] == 'UK':
+            UK = cols
+
+    send_mail(UK)
 
 def send_mail(tableData):
     server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -21,24 +44,9 @@ def send_mail(tableData):
 
 
 
-url = "https://www.worldometers.info/coronavirus/"
-
-webpage = requests.get(url)
-
-soup = BeautifulSoup(webpage.text, 'html.parser')
-
-table_body = soup.find('tbody')
-
-rows = table_body.find_all('tr')
-
-UK = []
-
-for row in rows:
-    cols = row.find_all('td')
-    cols = [x.text.strip() for x in cols]
-    if cols[0] == 'UK':
-        UK = cols
-
-send_mail(list(UK))
+while True:
+    schedule.run_pending()
+    time.sleep(3600)
+    # only check once per hour
 
 
